@@ -1,4 +1,4 @@
-import { StorageResource } from 'src/modules/storage_resources/entities/storage_resource.entity';
+import { StorageResource } from '../../storage_resources/entities/storage_resource.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
 @Entity({ name: 'storage' })
