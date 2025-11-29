@@ -1,11 +1,10 @@
 import React from "react";
 import { StatCard } from "@/components/StatCard";
-import { Battery, Droplets, Thermometer, Radio, Zap, Users, Package, AlertTriangle, Heart, Wind, Activity, Warehouse } from "lucide-react";
+import { Radio, Package } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { apiGet, getNasaMarsWeather, getNasaRoverPhotos } from "@/lib/api";
+import { apiGet } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 
 type Resource = { id: string; name: string; description?: string; quantity: number; idUser?: string };
@@ -15,8 +14,6 @@ export default function Dashboard() {
   const [status, setStatus] = React.useState<string>("");
   const [resources, setResources] = React.useState<Resource[]>([]);
   const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
-  const [nasaWeather, setNasaWeather] = React.useState<any>(null);
-  const [nasaPhotos, setNasaPhotos] = React.useState<any[]>([]);
   const [currentTime, setCurrentTime] = React.useState<string>("");
   const navigate = useNavigate();
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -77,19 +74,6 @@ export default function Dashboard() {
         console.error('Error loading resources:', e);
         setStatus('API Error: ' + e.message);
       });
-
-    // NASA data (public endpoints)
-    getNasaMarsWeather()
-      .then(resp => {
-        if (resp.success && resp.data) setNasaWeather(resp.data);
-      })
-      .catch(() => {});
-    
-    getNasaRoverPhotos('curiosity')
-      .then(resp => {
-        if (resp.success && Array.isArray(resp.data)) setNasaPhotos(resp.data);
-      })
-      .catch(() => {});
 
     return () => clearInterval(timeInterval);
   }, []);
@@ -241,85 +225,6 @@ export default function Dashboard() {
             </div>
           </div>
         </Card>
-
-
-
-        {/* NASA Integration */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="p-6 border-border/50">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 rounded-lg bg-mars-orange/10 text-mars-orange">
-                <Thermometer className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold">Mars Weather (NASA)</h3>
-                <p className="text-sm text-muted-foreground">InSight Mission Data</p>
-              </div>
-            </div>
-            {nasaWeather ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-lg bg-secondary/30">
-                    <p className="text-xs text-muted-foreground mb-1">Sol</p>
-                    <p className="text-2xl font-bold font-mono">{nasaWeather.sol}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-secondary/30">
-                    <p className="text-xs text-muted-foreground mb-1">Season</p>
-                    <p className="text-lg font-medium">{nasaWeather.season}</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center p-2 rounded bg-secondary/20">
-                    <span className="text-sm text-muted-foreground">Temperature (avg)</span>
-                    <span className="font-mono font-bold">{nasaWeather.temperature?.average?.toFixed(1)}°C</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 rounded bg-secondary/20">
-                    <span className="text-sm text-muted-foreground">Pressure (avg)</span>
-                    <span className="font-mono font-bold">{nasaWeather.pressure?.average?.toFixed(1)} Pa</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 rounded bg-secondary/20">
-                    <span className="text-sm text-muted-foreground">Wind Speed (avg)</span>
-                    <span className="font-mono font-bold">{nasaWeather.windSpeed?.average?.toFixed(1)} m/s</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 rounded bg-secondary/20">
-                    <span className="text-sm text-muted-foreground">Wind Direction</span>
-                    <span className="font-medium">{nasaWeather.windDirection}</span>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">Loading weather data...</p>
-            )}
-          </Card>
-
-          <Card className="p-6 border-border/50">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 rounded-lg bg-mission-blue/10 text-mission-blue">
-                <Activity className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold">Curiosity Rover Photos</h3>
-                <p className="text-sm text-muted-foreground">Latest Surface Images</p>
-              </div>
-            </div>
-            {nasaPhotos.length > 0 ? (
-              <div className="space-y-3">
-                <div className="grid grid-cols-3 gap-2">
-                  {nasaPhotos.slice(0, 6).map((photo: any, i: number) => (
-                    <div key={i} className="aspect-square bg-secondary/30 rounded overflow-hidden border border-border/50 hover:border-primary/50 transition-colors">
-                      <img src={photo.img_src} alt={`Rover ${i + 1}`} className="w-full h-full object-cover" />
-                    </div>
-                  ))}
-                </div>
-                <div className="text-xs text-muted-foreground text-center pt-2 border-t border-border/30">
-                  Showing {Math.min(6, nasaPhotos.length)} of {nasaPhotos.length} photos
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">Loading rover photos...</p>
-            )}
-          </Card>
-        </div>
       </div>
     </div>
   );
