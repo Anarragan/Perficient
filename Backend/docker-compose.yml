@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./src/config/.env
+    environment:
+      - NODE_ENV=production
+    # No depends_on needed since DB is Supabase (remote)
