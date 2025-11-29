@@ -1,0 +1,60 @@
+...existing code...
+# Node modules
+node_modules/
+
+# Build / output
+dist/
+build/
+.out/
+.next/
+out/
+coverage/
+public/build/
+
+# Caches
+.cache/
+.parcel-cache/
+.eslintcache
+vite-cache/
+
+# Environment files (private credentials)
+.env
+.env.*.local
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs / editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Temp / runtime
+tmp/
+temp/
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Generated archives / bundles
+*.tgz
+*.zip
+
+# TypeScript build
+*.tsbuildinfo
+
+# Misc
+coverage/
+.history/
+# End
