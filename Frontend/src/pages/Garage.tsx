@@ -6,11 +6,22 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Progress } from "@/components/ui/progress";
 import { apiGet } from "@/lib/api";
 
+type VehicleType = {
+  id: string;
+  name: string;
+  description?: string;
+};
+
+type User = {
+  id: string;
+  name: string;
+};
+
 type Vehicle = {
   id: string;
   capacidad: number;
-  id_type: string;
-  id_user?: string | null;
+  id_type: VehicleType | string;
+  id_user?: User | string | null;
   // optionally enriched fields if backend provides
   name?: string;
   status?: string;
@@ -133,8 +144,13 @@ export default function Garage() {
               <div className="space-y-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-xl font-bold">{vehicle.name ?? vehicle.id}</h3>
-                    <p className="text-sm text-muted-foreground">Type: {vehicle.id_type}</p>
+                    <h3 className="text-xl font-bold">
+                      {vehicle.name ?? (typeof vehicle.id_type === 'object' ? vehicle.id_type.name : 'Vehicle')}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Type: {typeof vehicle.id_type === 'object' ? vehicle.id_type.name : vehicle.id_type}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Capacity: {vehicle.capacidad} units</p>
                     <p className="text-xs text-muted-foreground font-mono mt-1">{vehicle.id}</p>
                   </div>
                   {vehicle.status && (
@@ -151,63 +167,24 @@ export default function Garage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  {typeof vehicle.battery === 'number' && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Battery className="w-4 h-4 text-primary" />
-                        <span className="text-muted-foreground">Battery</span>
-                      </div>
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-lg font-bold font-mono">{vehicle.battery}%</span>
-                        </div>
-                        <Progress value={vehicle.battery} className="h-2" />
-                      </div>
-                    </div>
-                  )}
-
-                  {typeof vehicle.health === 'number' && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Gauge className="w-4 h-4 text-primary" />
-                        <span className="text-muted-foreground">Health</span>
-                      </div>
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-lg font-bold font-mono">{vehicle.health}%</span>
-                        </div>
-                        <Progress value={vehicle.health} className="h-2" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
                 <div className="pt-4 border-t border-border/30 space-y-2">
-                  {vehicle.location && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="w-4 h-4" />
-                        Location
-                      </span>
-                      <span className="font-medium">{vehicle.location}</span>
+                  {typeof vehicle.id_type === 'object' && vehicle.id_type.description && (
+                    <div className="text-sm text-muted-foreground">
+                      <p>{vehicle.id_type.description}</p>
                     </div>
                   )}
-                  {vehicle.distance && (
+                  {vehicle.id_user && typeof vehicle.id_user === 'object' && (
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Distance from Base</span>
-                      <span className="font-mono">{vehicle.distance}</span>
+                      <span className="text-muted-foreground">Assigned to</span>
+                      <span className="font-medium">{vehicle.id_user.name}</span>
                     </div>
                   )}
-                  {vehicle.lastMaintenance && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2 text-muted-foreground">
-                        <Wrench className="w-4 h-4" />
-                        Last Maintenance
-                      </span>
-                      <span className="font-mono">{vehicle.lastMaintenance}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Status</span>
+                    <Badge variant="outline" className="border-status-green text-status-green">
+                      OPERATIONAL
+                    </Badge>
+                  </div>
                 </div>
               </div>
             </Card>
