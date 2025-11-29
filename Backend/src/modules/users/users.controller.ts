@@ -10,6 +10,14 @@ export class UsersController {
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
+    try {
+      const existingUser = await this.usersService.findByEmail(createUserDto.email);
+      if (existingUser) {
+        throw new Error('User with this email already exists');
+      }
+    } catch (error) {
+      throw error;
+    }
     return this.usersService.create(createUserDto);
   }
 

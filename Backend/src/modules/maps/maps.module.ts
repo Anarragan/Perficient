@@ -7,5 +7,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [TypeOrmModule.forFeature([Map])],
   controllers: [MapsController],
   providers: [MapsService],
+  exports: [TypeOrmModule]
 })
 export class MapsModule {}
