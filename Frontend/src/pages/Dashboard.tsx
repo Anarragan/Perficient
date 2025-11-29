@@ -1,11 +1,99 @@
+import React from "react";
 import { StatCard } from "@/components/StatCard";
-import { Battery, Droplets, Thermometer, Radio, Zap, Users, Package, AlertTriangle, Heart, Wind, Activity } from "lucide-react";
+import { Battery, Droplets, Thermometer, Radio, Zap, Users, Package, AlertTriangle, Heart, Wind, Activity, Warehouse } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { apiGet, getNasaMarsWeather, getNasaRoverPhotos } from "@/lib/api";
+import { useNavigate } from "react-router-dom";
+
+type Resource = { id: string; name: string; description?: string; quantity: number; idUser?: string };
+type UserProfile = { id: string; name: string; email: string; url_photo?: string };
 
 export default function Dashboard() {
+  const [status, setStatus] = React.useState<string>("");
+  const [resources, setResources] = React.useState<Resource[]>([]);
+  const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
+  const [nasaWeather, setNasaWeather] = React.useState<any>(null);
+  const [nasaPhotos, setNasaPhotos] = React.useState<any[]>([]);
+  const [currentTime, setCurrentTime] = React.useState<string>("");
+  const navigate = useNavigate();
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  function logout() {
+    localStorage.removeItem("token");
+    navigate("/login");
+  }
+
+  React.useEffect(() => {
+    // Update current time every second
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(now.toUTCString().slice(17, 25) + ' UTC');
+    };
+    updateTime();
+    const timeInterval = setInterval(updateTime, 1000);
+
+    const token = localStorage.getItem("token");
+    
+    if (!token) {
+      setStatus('No token found');
+      clearInterval(timeInterval);
+      return;
+    }
+
+    // Decode token to get user ID
+    let currentUserId = '1';
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      currentUserId = payload.sub || payload.userId || '1';
+    } catch (e) {
+      console.error('Error decoding token:', e);
+    }
+
+    // Load user profile
+    apiGet(`/users/${currentUserId}`, token)
+      .then(resp => {
+        if (resp.success && resp.data) {
+          setUserProfile(resp.data);
+        } else if (resp.id) {
+          setUserProfile(resp);
+        }
+      })
+      .catch((e) => console.error('Error loading profile:', e));
+
+    // Load all resources from backend
+    apiGet('/resources', token)
+      .then((resp: any) => {
+        console.log('Resources API response:', resp);
+        // Backend returns { success: true, data: [...] }
+        const data = resp.success && resp.data ? resp.data : (Array.isArray(resp) ? resp : []);
+        setResources(data);
+        console.log('Resources loaded:', data.length, 'items');
+        setStatus('API OK');
+      })
+      .catch((e) => {
+        console.error('Error loading resources:', e);
+        setStatus('API Error: ' + e.message);
+      });
+
+    // NASA data (public endpoints)
+    getNasaMarsWeather()
+      .then(resp => {
+        if (resp.success && resp.data) setNasaWeather(resp.data);
+      })
+      .catch(() => {});
+    
+    getNasaRoverPhotos('curiosity')
+      .then(resp => {
+        if (resp.success && Array.isArray(resp.data)) setNasaPhotos(resp.data);
+      })
+      .catch(() => {});
+
+    return () => clearInterval(timeInterval);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-space-deep to-background">
       <div className="border-b border-border/50 bg-card/30 backdrop-blur-sm sticky top-0 z-10">
@@ -13,268 +101,225 @@ export default function Dashboard() {
           <div className="flex items-center gap-4">
             <SidebarTrigger />
             <div>
-              <h1 className="text-3xl font-bold">Mission Control</h1>
+              <h1 className="text-3xl font-bold">Marficient Control</h1>
               <p className="text-sm text-muted-foreground">Real-time Mars Base Operations</p>
             </div>
           </div>
           <div className="flex items-center gap-6 text-sm">
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground">Earth Time:</span>
-              <span className="font-mono text-foreground">15:47:23 UTC</span>
+              <span className="font-mono text-foreground">{currentTime}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground">Mars Sol:</span>
               <span className="font-mono text-primary">1247</span>
             </div>
+            {!!token && (
+              <button onClick={logout} className="text-sm underline">Logout</button>
+            )}
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-6 py-8 space-y-8">
-        {/* Critical Alerts */}
-        <Card className="p-4 bg-status-critical/10 border-status-critical/30">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-status-critical" />
-            <div>
-              <p className="font-medium text-status-critical">Weather Alert</p>
-              <p className="text-sm text-muted-foreground">Dust storm approaching from sector C-7. ETA: 6 hours</p>
-            </div>
-          </div>
-        </Card>
-
-        {/* User Center with Vital Stats */}
+        {/* Resources from Stream */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          {/* Left Stats */}
-          <div className="space-y-6">
-            <StatCard
-              title="Heart Rate"
-              value="72"
-              unit="BPM"
-              icon={Heart}
-              status="nominal"
-            >
-              <Progress value={72} className="h-2" />
-            </StatCard>
-
-            <StatCard
-              title="Oxygen Saturation"
-              value="98"
-              unit="%"
-              icon={Wind}
-              status="nominal"
-              trend={{ value: "0.5%", isPositive: true }}
-            >
-              <Progress value={98} className="h-2" />
-            </StatCard>
-
-            <StatCard
-              title="Body Temp"
-              value="36.8"
-              unit="°C"
-              icon={Thermometer}
-              status="nominal"
-            />
+          {/* Resources */}
+          <div className="space-y-6 lg:col-span-1">
+            {resources.length > 0 ? (
+              resources.slice(0, 3).map((res) => (
+                <StatCard
+                  key={res.id}
+                  title={res.name}
+                  value={String(res.quantity)}
+                  unit="units"
+                  icon={Package}
+                  status="nominal"
+                >
+                  {res.description && (
+                    <p className="text-xs text-muted-foreground">{res.description}</p>
+                  )}
+                </StatCard>
+              ))
+            ) : (
+              <Card className="p-6 border-border/50">
+                <p className="text-sm text-muted-foreground">Loading resources stream...</p>
+              </Card>
+            )}
           </div>
 
-          {/* Center - User */}
+          {/* Center - User Profile */}
           <div className="flex flex-col items-center justify-center">
             <Card className="p-8 border-border/50 bg-card/50 backdrop-blur-sm w-full">
-              <div className="flex flex-col items-center gap-6">
-                <Avatar className="w-32 h-32 border-4 border-primary/30">
-                  <AvatarImage src="/placeholder.svg" alt="Commander" />
-                  <AvatarFallback className="text-3xl bg-primary/20 text-primary">CM</AvatarFallback>
-                </Avatar>
-                <div className="text-center space-y-2">
-                  <h2 className="text-2xl font-bold">Commander Marcus</h2>
-                  <p className="text-muted-foreground">Mission Commander</p>
-                  <div className="flex items-center justify-center gap-2 pt-2">
-                    <span className="w-3 h-3 rounded-full bg-status-green animate-pulse"></span>
-                    <span className="text-sm text-status-green font-medium">ACTIVE</span>
+              {userProfile ? (
+                <div className="flex flex-col items-center gap-6">
+                  <Avatar className="w-32 h-32 border-4 border-primary/30">
+                    {userProfile.url_photo && <AvatarImage src={userProfile.url_photo} alt={userProfile.name} />}
+                    <AvatarFallback className="text-3xl bg-primary/20 text-primary">
+                      {userProfile.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-center space-y-2">
+                    <h2 className="text-2xl font-bold">{userProfile.name}</h2>
+                    <p className="text-muted-foreground">{userProfile.email}</p>
+                    <div className="flex items-center justify-center gap-2 pt-2">
+                      <span className="w-3 h-3 rounded-full bg-status-green animate-pulse"></span>
+                      <span className="text-sm text-status-green font-medium">ACTIVE</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 w-full pt-4 border-t border-border/30">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold font-mono">{resources.length}</p>
+                      <p className="text-xs text-muted-foreground">TOTAL RESOURCES</p>
+                    </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 w-full pt-4 border-t border-border/30">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold font-mono">1247</p>
-                    <p className="text-xs text-muted-foreground">SOLS ON MARS</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold font-mono">18</p>
-                    <p className="text-xs text-muted-foreground">MISSIONS</p>
-                  </div>
+              ) : (
+                <div className="flex flex-col items-center gap-6">
+                  <p className="text-sm text-muted-foreground">Loading profile...</p>
                 </div>
-              </div>
+              )}
             </Card>
           </div>
 
-          {/* Right Stats */}
-          <div className="space-y-6">
-            <StatCard
-              title="Hydration Level"
-              value="92"
-              unit="%"
-              icon={Droplets}
-              status="nominal"
-            >
-              <Progress value={92} className="h-2" />
-            </StatCard>
-
-            <StatCard
-              title="Activity Level"
-              value="68"
-              unit="%"
-              icon={Activity}
-              status="nominal"
-              trend={{ value: "3.2%", isPositive: true }}
-            >
-              <Progress value={68} className="h-2" />
-            </StatCard>
-
-            <StatCard
-              title="Sleep Quality"
-              value="8.2"
-              unit="/10"
-              icon={Zap}
-              status="nominal"
-            />
+          {/* Right: More Resources */}
+          <div className="space-y-6 lg:col-span-1">
+            {resources.length > 3 ? (
+              resources.slice(3, 6).map((res) => (
+                <StatCard
+                  key={res.id}
+                  title={res.name}
+                  value={String(res.quantity)}
+                  unit="units"
+                  icon={Package}
+                  status="nominal"
+                >
+                  {res.description && (
+                    <p className="text-xs text-muted-foreground">{res.description}</p>
+                  )}
+                </StatCard>
+              ))
+            ) : resources.length > 0 ? (
+              <Card className="p-6 border-border/50">
+                <p className="text-sm text-muted-foreground">Showing all {resources.length} resources</p>
+              </Card>
+            ) : (
+              <Card className="p-6 border-border/50">
+                <p className="text-sm text-muted-foreground">No additional resources</p>
+              </Card>
+            )}
           </div>
         </div>
 
-        {/* System Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Power Reserves"
-            value="87"
-            unit="%"
-            icon={Battery}
-            status="nominal"
-            trend={{ value: "2.3%", isPositive: true }}
-          >
-            <div className="space-y-2">
-              <Progress value={87} className="h-2" />
-              <p className="text-xs text-muted-foreground">Solar: 72% | Nuclear: 15%</p>
-            </div>
-          </StatCard>
 
-          <StatCard
-            title="Water Supply"
-            value="2,847"
-            unit="L"
-            icon={Droplets}
-            status="nominal"
-            trend={{ value: "1.2%", isPositive: false }}
-          >
-            <div className="space-y-2">
-              <Progress value={64} className="h-2" />
-              <p className="text-xs text-muted-foreground">Recycling efficiency: 94%</p>
-            </div>
-          </StatCard>
 
-          <StatCard
-            title="Habitat Temp"
-            value="21.5"
-            unit="°C"
-            icon={Thermometer}
-            status="nominal"
-          >
-            <p className="text-xs text-muted-foreground">External: -63°C</p>
-          </StatCard>
-
-          <StatCard
-            title="O₂ Levels"
-            value="98.2"
-            unit="%"
-            icon={Zap}
-            status="nominal"
-            trend={{ value: "0.5%", isPositive: true }}
-          >
-            <div className="space-y-2">
-              <Progress value={98} className="h-2" />
-              <p className="text-xs text-muted-foreground">Life support: Optimal</p>
-            </div>
-          </StatCard>
-        </div>
-
-        {/* Secondary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="p-6 border-border/50">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-mission-blue/10 text-mission-blue">
-                <Users className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Active Crew</p>
-                <p className="text-2xl font-bold font-mono">12/12</p>
-              </div>
-            </div>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">On Mission</span>
-                <span className="font-medium">4</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">In Habitat</span>
-                <span className="font-medium">8</span>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 border-border/50">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-mars-orange/10 text-mars-orange">
-                <Package className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Supply Status</p>
-                <p className="text-2xl font-bold font-mono">78%</p>
-              </div>
-            </div>
-            <Progress value={78} className="h-2 mb-2" />
-            <p className="text-xs text-muted-foreground">Next resupply: Sol 1289</p>
-          </Card>
-
-          <Card className="p-6 border-border/50">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                <Radio className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Comms Status</p>
-                <p className="text-2xl font-bold font-mono flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-status-green animate-pulse"></span>
-                  Active
-                </p>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground">Signal delay: 13m 42s</p>
-          </Card>
-        </div>
-
-        {/* Mission Timeline */}
+        {/* System Status */}
         <Card className="p-6 border-border/50">
-          <h3 className="text-lg font-bold mb-4">Today's Mission Schedule</h3>
-          <div className="space-y-4">
-            {[
-              { time: "08:00", task: "Atmospheric sampling", status: "completed" },
-              { time: "11:30", task: "Solar panel maintenance", status: "in-progress" },
-              { time: "14:00", task: "Geological survey - Sector B-4", status: "scheduled" },
-              { time: "17:30", task: "Equipment check & inventory", status: "scheduled" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-4 p-3 rounded-lg bg-secondary/30">
-                <span className="font-mono text-sm text-muted-foreground min-w-[60px]">{item.time}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{item.task}</p>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded ${
-                  item.status === 'completed' ? 'bg-status-green/20 text-status-green' :
-                  item.status === 'in-progress' ? 'bg-mission-blue/20 text-mission-blue' :
-                  'bg-muted text-muted-foreground'
-                }`}>
-                  {item.status.replace('-', ' ').toUpperCase()}
-                </span>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <Radio className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold">System Status</h3>
+              <p className="text-sm text-muted-foreground">Communications & API</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-3 rounded-lg bg-secondary/30">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-3 h-3 rounded-full bg-status-green animate-pulse"></span>
+                <span className="text-sm font-medium">Connection Active</span>
               </div>
-            ))}
+              {status && <p className="text-xs text-muted-foreground">API Status: {status}</p>}
+              <p className="text-xs text-muted-foreground">Signal delay: 13m 42s</p>
+            </div>
+            <div className="p-3 rounded-lg bg-secondary/30">
+              <p className="text-sm font-medium mb-2">Resource Stream</p>
+              {resources.length > 0 && (
+                <p className="text-xs text-muted-foreground">{resources.length} resources live</p>
+              )}
+            </div>
           </div>
         </Card>
+
+
+
+        {/* NASA Integration */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="p-6 border-border/50">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 rounded-lg bg-mars-orange/10 text-mars-orange">
+                <Thermometer className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">Mars Weather (NASA)</h3>
+                <p className="text-sm text-muted-foreground">InSight Mission Data</p>
+              </div>
+            </div>
+            {nasaWeather ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 rounded-lg bg-secondary/30">
+                    <p className="text-xs text-muted-foreground mb-1">Sol</p>
+                    <p className="text-2xl font-bold font-mono">{nasaWeather.sol}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-secondary/30">
+                    <p className="text-xs text-muted-foreground mb-1">Season</p>
+                    <p className="text-lg font-medium">{nasaWeather.season}</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center p-2 rounded bg-secondary/20">
+                    <span className="text-sm text-muted-foreground">Temperature (avg)</span>
+                    <span className="font-mono font-bold">{nasaWeather.temperature?.average?.toFixed(1)}°C</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 rounded bg-secondary/20">
+                    <span className="text-sm text-muted-foreground">Pressure (avg)</span>
+                    <span className="font-mono font-bold">{nasaWeather.pressure?.average?.toFixed(1)} Pa</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 rounded bg-secondary/20">
+                    <span className="text-sm text-muted-foreground">Wind Speed (avg)</span>
+                    <span className="font-mono font-bold">{nasaWeather.windSpeed?.average?.toFixed(1)} m/s</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 rounded bg-secondary/20">
+                    <span className="text-sm text-muted-foreground">Wind Direction</span>
+                    <span className="font-medium">{nasaWeather.windDirection}</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Loading weather data...</p>
+            )}
+          </Card>
+
+          <Card className="p-6 border-border/50">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 rounded-lg bg-mission-blue/10 text-mission-blue">
+                <Activity className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">Curiosity Rover Photos</h3>
+                <p className="text-sm text-muted-foreground">Latest Surface Images</p>
+              </div>
+            </div>
+            {nasaPhotos.length > 0 ? (
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  {nasaPhotos.slice(0, 6).map((photo: any, i: number) => (
+                    <div key={i} className="aspect-square bg-secondary/30 rounded overflow-hidden border border-border/50 hover:border-primary/50 transition-colors">
+                      <img src={photo.img_src} alt={`Rover ${i + 1}`} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+                <div className="text-xs text-muted-foreground text-center pt-2 border-t border-border/30">
+                  Showing {Math.min(6, nasaPhotos.length)} of {nasaPhotos.length} photos
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Loading rover photos...</p>
+            )}
+          </Card>
+        </div>
       </div>
     </div>
   );

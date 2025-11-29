@@ -3,6 +3,8 @@ import { MarsSidebar } from "./MarsSidebar";
 import { Outlet } from "react-router-dom";
 
 export function MarsLayout() {
+  // Layout no longer shows auth links; logout moved to Dashboard
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-space-deep">

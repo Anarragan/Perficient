@@ -43,9 +43,9 @@ export class VehiclesController {
   streamUserVehicles(@Param('userId') userId: string): Observable<MessageEvent> {
     return this.vehiclesService.getSubject().pipe(
       startWith(null),
-      switchMap(() => {
-        const vehicles = this.vehiclesService.findByUserId(userId);
-        return of({ data: vehicles } as MessageEvent);
+      switchMap(async () => {
+        const vehicles = await this.vehiclesService.findByUserId(userId);
+        return { data: vehicles } as MessageEvent;
       }),
     );
   }

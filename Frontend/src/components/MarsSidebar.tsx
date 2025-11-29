@@ -14,10 +14,10 @@ import {
 } from "@/components/ui/sidebar";
 
 const navItems = [
-  { title: "Mission Control", url: "/", icon: Home },
+  { title: "Mission Control", url: "/dashboard", icon: Home },
   { title: "Garage", url: "/garage", icon: Warehouse },
   { title: "Storage", url: "/storage", icon: PackageSearch },
-  { title: "Maps", url: "/maps", icon: Map },
+  { title: "Nasa", url: "/maps", icon: Map },
   { title: "Crew", url: "/crew", icon: Users },
 ];
 

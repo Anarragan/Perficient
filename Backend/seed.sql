@@ -22,7 +22,9 @@ INSERT INTO resources (id, name, description, quantity, id_user) VALUES
 ('550e8400-e29b-41d4-a716-446655440004', 'Oxygen', 'Essential gas for breathing on Mars', 1000, '8a2a4d8c-23d4-4c3f-a52a-5ac0d101f514'),
 ('550e8400-e29b-41d4-a716-446655440005', 'Water', 'Vital liquid for survival and hydration', 500, 'a20fc84c-3505-4d48-ab7c-4ea47103fe43'),
 ('550e8400-e29b-41d4-a716-446655440006', 'Food', 'Nutrients and supplies for sustenance', 2000, '058c7ecd-48e5-4cc3-a1ef-5817be89602a'),
-('550e8400-e29b-41d4-a716-446655440007', 'Suit Durability', 'Materials to maintain spacesuit integrity', 300, 'fccd900a-56a5-4d40-8c0d-da1e2cd631b4')
+('550e8400-e29b-41d4-a716-446655440007', 'Suit Durability', 'Materials to maintain spacesuit integrity', 300, 'fccd900a-56a5-4d40-8c0d-da1e2cd631b4'),
+('550e8400-e29b-41d4-a716-446655440020', 'Power Cells', 'Energy storage for habitat systems', 750, '06f7da8f-7fb1-4631-b567-cde20549cbc8'),
+('550e8400-e29b-41d4-a716-446655440021', 'Medical Supplies', 'First aid and emergency medical equipment', 450, '06f7da8f-7fb1-4631-b567-cde20549cbc8')
 ON CONFLICT (id) DO NOTHING;
 
 -- Insert Storage
@@ -56,5 +58,7 @@ INSERT INTO vehicles (id, capacidad, id_type, id_user) VALUES
 ('550e8400-e29b-41d4-a716-446655440016', 100, '550e8400-e29b-41d4-a716-446655440012', '8a2a4d8c-23d4-4c3f-a52a-5ac0d101f514'),
 ('550e8400-e29b-41d4-a716-446655440017', 200, '550e8400-e29b-41d4-a716-446655440013', 'a20fc84c-3505-4d48-ab7c-4ea47103fe43'),
 ('550e8400-e29b-41d4-a716-446655440018', 50, '550e8400-e29b-41d4-a716-446655440014', '058c7ecd-48e5-4cc3-a1ef-5817be89602a'),
-('550e8400-e29b-41d4-a716-446655440019', 20, '550e8400-e29b-41d4-a716-446655440015', 'fccd900a-56a5-4d40-8c0d-da1e2cd631b4')
+('550e8400-e29b-41d4-a716-446655440019', 20, '550e8400-e29b-41d4-a716-446655440015', 'fccd900a-56a5-4d40-8c0d-da1e2cd631b4'),
+('550e8400-e29b-41d4-a716-446655440022', 150, '550e8400-e29b-41d4-a716-446655440012', '06f7da8f-7fb1-4631-b567-cde20549cbc8'),
+('550e8400-e29b-41d4-a716-446655440023', 75, '550e8400-e29b-41d4-a716-446655440015', '06f7da8f-7fb1-4631-b567-cde20549cbc8')
 ON CONFLICT (id) DO NOTHING;

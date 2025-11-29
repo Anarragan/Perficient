@@ -4,99 +4,66 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Activity, Briefcase, MapPin } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Progress } from "@/components/ui/progress";
+import React from "react";
+import { apiGet } from "@/lib/api";
 
-const crew = [
-  {
-    id: "CR-001",
-    name: "Commander Sarah Chen",
-    role: "Mission Commander",
-    specialty: "Aerospace Engineering",
-    status: "on-duty",
-    health: 98,
-    location: "Command Center",
-    tasksCompleted: 156,
-    initials: "SC",
-  },
-  {
-    id: "CR-002",
-    name: "Dr. Marcus Rodriguez",
-    role: "Chief Medical Officer",
-    specialty: "Emergency Medicine",
-    status: "on-duty",
-    health: 95,
-    location: "Medical Bay",
-    tasksCompleted: 142,
-    initials: "MR",
-  },
-  {
-    id: "CR-003",
-    name: "Engineer Yuki Tanaka",
-    role: "Systems Engineer",
-    specialty: "Mechanical Systems",
-    status: "off-duty",
-    health: 100,
-    location: "Habitat Module B",
-    tasksCompleted: 189,
-    initials: "YT",
-  },
-  {
-    id: "CR-004",
-    name: "Dr. Amara Okafor",
-    role: "Research Scientist",
-    specialty: "Geology & Mineralogy",
-    status: "on-mission",
-    health: 97,
-    location: "Sector B-4",
-    tasksCompleted: 178,
-    initials: "AO",
-  },
-  {
-    id: "CR-005",
-    name: "Lt. Pavel Volkov",
-    role: "Pilot & Navigation",
-    specialty: "Flight Operations",
-    status: "on-duty",
-    health: 96,
-    location: "Flight Control",
-    tasksCompleted: 134,
-    initials: "PV",
-  },
-  {
-    id: "CR-006",
-    name: "Dr. Zara Patel",
-    role: "Botanist",
-    specialty: "Agriculture & Life Support",
-    status: "on-duty",
-    health: 99,
-    location: "Greenhouse",
-    tasksCompleted: 167,
-    initials: "ZP",
-  },
-  {
-    id: "CR-007",
-    name: "Engineer Alex Kim",
-    role: "Electronics Specialist",
-    specialty: "Communications",
-    status: "on-mission",
-    health: 94,
-    location: "Sector C-2",
-    tasksCompleted: 145,
-    initials: "AK",
-  },
-  {
-    id: "CR-008",
-    name: "Dr. Elena Kovač",
-    role: "Chemist",
-    specialty: "Resource Processing",
-    status: "off-duty",
-    health: 100,
-    location: "Habitat Module A",
-    tasksCompleted: 123,
-    initials: "EK",
-  },
-];
+type CrewMember = {
+  id: string;
+  name: string;
+  role?: string;
+  specialty?: string;
+  status?: string;
+  health?: number;
+  location?: string;
+  tasksCompleted?: number;
+  initials?: string;
+};
 
 export default function Crew() {
+  const [crew, setCrew] = React.useState<CrewMember[]>([]);
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const [error, setError] = React.useState<string>("");
+  const [stats, setStats] = React.useState<{ vehicles: number; storage: number }>({ vehicles: 0, storage: 0 });
+
+  React.useEffect(() => {
+    const token = localStorage.getItem("token") || undefined;
+    
+    // Load crew stats
+    Promise.all([
+      apiGet('/vehicles', token).catch(() => ({ success: true, data: [] })),
+      apiGet('/storage', token).catch(() => []),
+    ]).then(([vehiclesResp, storage]) => {
+      const vehicleData = vehiclesResp.success ? vehiclesResp.data : vehiclesResp;
+      setStats({
+        vehicles: Array.isArray(vehicleData) ? vehicleData.length : 0,
+        storage: Array.isArray(storage) ? storage.length : 0,
+      });
+    });
+
+    apiGet('/users', token)
+      .then((data: any[]) => {
+        const mapped: CrewMember[] = data.map((u) => ({
+          id: u.id ?? u.user_id ?? String(u.email ?? u.name ?? Math.random()),
+          name: (u.name ?? `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim()) || u.email,
+          role: u.role ?? 'Crew Member',
+          specialty: u.specialty ?? 'General',
+          status: u.status ?? 'on-duty',
+          health: typeof u.health === 'number' ? u.health : 100,
+          location: u.location ?? 'Habitat',
+          tasksCompleted: typeof u.tasksCompleted === 'number' ? u.tasksCompleted : undefined,
+          initials: (u.name ?? u.email ?? 'UN')
+            .split(' ')
+            .map((p: string) => p[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase(),
+        }));
+        setCrew(mapped);
+      })
+      .catch((e) => setError(e.message || 'Error cargando usuarios'))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-space-deep to-background">
       <div className="border-b border-border/50 bg-card/30 backdrop-blur-sm sticky top-0 z-10">
@@ -110,16 +77,29 @@ export default function Crew() {
           </div>
           <div className="flex items-center gap-4">
             <Badge variant="outline" className="border-status-green text-status-green">
-              6 On Duty
+              {crew.length} Total Users
             </Badge>
             <Badge variant="outline" className="border-mission-blue text-mission-blue">
-              2 On Mission
+              {stats.vehicles} Vehicles
+            </Badge>
+            <Badge variant="outline" className="border-mars-orange text-mars-orange">
+              {stats.storage} Storage Items
             </Badge>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-6 py-8">
+        {error && (
+          <Card className="p-6 border-border/50">
+            <p className="text-sm text-status-critical">{error}</p>
+          </Card>
+        )}
+        {loading && (
+          <Card className="p-6 border-border/50">
+            <p className="text-sm text-muted-foreground">Cargando tripulación...</p>
+          </Card>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {crew.map((member) => (
             <Card key={member.id} className="p-6 border-border/50 hover:border-primary/50 transition-all duration-300">
@@ -145,7 +125,7 @@ export default function Crew() {
                     'border-muted text-muted-foreground w-full justify-center'
                   }
                 >
-                  {member.status.toUpperCase().replace('-', ' ')}
+                  {member.status?.toUpperCase().replace('-', ' ')}
                 </Badge>
 
                 <div className="space-y-3">
@@ -155,24 +135,26 @@ export default function Crew() {
                         <Activity className="w-3 h-3" />
                         Health
                       </span>
-                      <span className="font-mono font-medium">{member.health}%</span>
+                      <span className="font-mono font-medium">{member.health ?? 100}%</span>
                     </div>
-                    <Progress value={member.health} className="h-2" />
+                    <Progress value={member.health ?? 100} className="h-2" />
                   </div>
 
                   <div className="space-y-2 text-sm pt-2 border-t border-border/30">
                     <div className="flex items-center gap-2">
                       <Briefcase className="w-4 h-4 text-primary" />
-                      <span className="text-muted-foreground truncate">{member.specialty}</span>
+                      <span className="text-muted-foreground truncate">{member.specialty ?? 'General'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-primary" />
-                      <span className="text-muted-foreground truncate">{member.location}</span>
+                      <span className="text-muted-foreground truncate">{member.location ?? 'Habitat'}</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Tasks Completed</span>
-                      <span className="font-mono font-medium text-foreground">{member.tasksCompleted}</span>
-                    </div>
+                    {typeof member.tasksCompleted === 'number' && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Tasks Completed</span>
+                        <span className="font-mono font-medium text-foreground">{member.tasksCompleted}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
