@@ -12,8 +12,8 @@ export class VehiclesService {
     const vehicle: Vehicle = {
       id: randomUUID(),
       capacidad: createVehicleDto.capacidad,
-      id_type: createVehicleDto.id_type,
-      id_user: createVehicleDto.id_user,
+      id_type: createVehicleDto.id_type as any,
+      id_user: createVehicleDto.id_user !== undefined ? ({ id: createVehicleDto.id_user } as any) : undefined,
     };
     this.vehicles.push(vehicle);
     return vehicle;
@@ -31,8 +31,8 @@ export class VehiclesService {
     const vehicle = this.findOne(id);
     if (!vehicle) return null;
     if (updateVehicleDto.capacidad !== undefined) vehicle.capacidad = updateVehicleDto.capacidad;
-    if (updateVehicleDto.id_type) vehicle.id_type = updateVehicleDto.id_type;
-    if (updateVehicleDto.id_user !== undefined) vehicle.id_user = updateVehicleDto.id_user;
+    if (updateVehicleDto.id_type) vehicle.id_type = updateVehicleDto.id_type as any;
+    if (updateVehicleDto.id_user !== undefined) vehicle.id_user = ({ id: updateVehicleDto.id_user } as any);
     return vehicle;
   }
 
