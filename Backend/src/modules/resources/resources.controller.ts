@@ -2,8 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Sse, UseGuards } fro
 import { ResourcesService } from './resources.service';
 import { CreateResourceDto } from './dto/create-resource.dto';
 import { UpdateResourceDto } from './dto/update-resource.dto';
-import { Observable, interval } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { switchMap, startWith } from 'rxjs/operators';
 import { ApiSecurity, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -41,7 +41,8 @@ export class ResourcesController {
 
   @Sse('user/:userId/stream')
   streamUserResources(@Param('userId') userId: string): Observable<MessageEvent> {
-    return interval(1000).pipe(
+    return this.resourcesService.subject.pipe(
+      startWith(null),
       switchMap(async () => {
         const resources = await this.resourcesService.findByUserId(userId);
         return { data: resources } as MessageEvent;

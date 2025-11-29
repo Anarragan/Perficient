@@ -4,6 +4,7 @@ import { UpdateResourceDto } from './dto/update-resource.dto';
 import { Resource } from './entities/resource.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Subject } from 'rxjs';
 
 @Injectable()
 export class ResourcesService {
@@ -12,9 +13,12 @@ export class ResourcesService {
     private resourceRepository: Repository<Resource>,
   ) {}
 
+  private subject = new Subject();
+
   async create(createResourceDto: CreateResourceDto): Promise<any> {
     const resource = this.resourceRepository.create(createResourceDto);
     const saved = await this.resourceRepository.save(resource);
+    this.subject.next();
     return { success: true, message: 'Resource created successfully', data: saved };
   }
 
@@ -40,6 +44,7 @@ export class ResourcesService {
     await this.resourceRepository.update(id, updateResourceDto);
     const updated = await this.findOne(id);
     if (updated.success) {
+      this.subject.next();
       return { success: true, message: 'Resource updated successfully', data: updated.data };
     } else {
       return { success: false, message: 'Resource not found' };
@@ -49,6 +54,7 @@ export class ResourcesService {
   async remove(id: string): Promise<any> {
     const result = await this.resourceRepository.delete(id);
     if (result.affected && result.affected > 0) {
+      this.subject.next();
       return { success: true, message: 'Resource deleted successfully' };
     } else {
       return { success: false, message: 'Resource not found' };
