@@ -1,15 +1,21 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './modules/users/users.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { MapsModule } from './modules/maps/maps.module';
-import { StorageModule } from './modules/storage/storage.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { ResourcesModule } from './modules/resources/resources.module';
+import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
-  imports: [UsersModule, StorageModule, VehiclesModule, MapsModule, ResourcesModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({ envFilePath: './config/.env' }),
+    UsersModule,
+    ResourcesModule,
+    StorageModule,
+    VehiclesModule,
+    MapsModule,
+    AuthModule,
+  ],
 })
 export class AppModule {}
