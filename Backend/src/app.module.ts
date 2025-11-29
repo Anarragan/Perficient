@@ -10,7 +10,7 @@ import { DatabaseConfigModule } from './database/db.config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ envFilePath: './config/.env' }),
+    ConfigModule.forRoot({ envFilePath: 'src/config/.env' }),
     DatabaseConfigModule,
     UsersModule,
     ResourcesModule,

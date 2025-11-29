@@ -19,6 +19,17 @@ export class AuthService {
     return null;
   }
 
+  async register(userData: any): Promise<any> {
+    const existingUser = await this.usersService.findByEmail(userData.email);
+    if (existingUser) {
+      throw new Error('User with this email already exists');
+    }
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const newUser = await this.usersService.create({ ...userData, password: hashedPassword });
+    const { password, ...result } = newUser;
+    return result;
+  }
+
   async login(user: any) {
     const payload = { email: user.email, sub: user.id };
     return {
