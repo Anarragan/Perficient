@@ -46,7 +46,7 @@ export class NasaService {
         lastUTC: solData.Last_UTC,
       };
 
-      return usableData;
+      return { success: true, data: usableData };
     } catch (error) {
       this.logger.error('Error fetching Mars weather data', error);
       if (error.response) {
@@ -67,7 +67,7 @@ export class NasaService {
 
     try {
       const response = await firstValueFrom(this.httpService.get(url));
-      return response.data.photos;
+      return { success: true, data: response.data.photos };
     } catch (error) {
       this.logger.error(`Error fetching rover photos for ${rover}`, error);
       if (error.response) {

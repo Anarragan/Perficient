@@ -1,10 +1,14 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { NasaService } from './nasa.service';
 import { GetRoverPhotosDto } from './dto/get-rover-photos.dto';
+import { SkipApiKey } from '../../common/skip-api-key.decorator';
+import { SkipJwt } from '../../common/skip-jwt.decorator';
 
 @ApiTags('NASA')
 @Controller('nasa')
+@SkipApiKey()
+@SkipJwt()
 export class NasaController {
   constructor(private readonly nasaService: NasaService) {}
 

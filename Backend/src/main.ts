@@ -1,10 +1,15 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ApiKeyGuard } from './common/api-key.guard';
+import { JwtGuard } from './common/jwt.guard';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const reflector = app.get(Reflector);
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
@@ -12,12 +17,16 @@ async function bootstrap() {
     transform: true,
   }));
 
+  app.useGlobalGuards(new ApiKeyGuard(app.get(ConfigService), reflector));
+
   const config = new DocumentBuilder()
     .setTitle('Mars Mission API')
     .setDescription('API for Mars Mission project')
     .setVersion('1.0')
     .addTag('mars')
     .addTag('NASA')
+    .addApiKey({ type: 'apiKey', name: 'X-API-Key', in: 'header' }, 'api-key')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

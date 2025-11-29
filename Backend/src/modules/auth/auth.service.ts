@@ -11,10 +11,21 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
+    console.log('Validating user:', email, pass);
     const user = await this.usersService.findByEmail(email);
-    if (user && await bcrypt.compare(pass, user.password)) {
-      const { password, ...result } = user;
-      return result;
+    console.log('User found:', user ? 'yes' : 'no');
+    if (user) {
+      console.log('Stored password:', user.password);
+      const isMatch = await bcrypt.compare(pass, user.password);
+      console.log('Password match:', isMatch);
+      if (!isMatch) {
+        const inputHash = await bcrypt.hash(pass, 10);
+        console.log('Input password hash:', inputHash);
+      }
+      if (isMatch) {
+        const { password, ...result } = user;
+        return result;
+      }
     }
     return null;
   }
@@ -24,15 +35,17 @@ export class AuthService {
     if (existingUser) {
       throw new Error('User with this email already exists');
     }
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    const newUser = await this.usersService.create({ ...userData, password: hashedPassword });
-    const { password, ...result } = newUser;
-    return result;
+    const newUser = await this.usersService.create(userData);
+    const { password, ...result } = newUser.data;
+    return { success: true, message: 'User registered successfully', user: result };
   }
 
   async login(user: any) {
+    console.log('AuthService login called with user:', user);
     const payload = { email: user.email, sub: user.id };
     return {
+      success: true,
+      message: 'Login successful',
       access_token: this.jwtService.sign(payload),
     };
   }

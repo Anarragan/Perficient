@@ -12,26 +12,46 @@ export class ResourcesService {
     private resourceRepository: Repository<Resource>,
   ) {}
 
-  async create(createResourceDto: CreateResourceDto): Promise<Resource> {
+  async create(createResourceDto: CreateResourceDto): Promise<any> {
     const resource = this.resourceRepository.create(createResourceDto);
-    return this.resourceRepository.save(resource);
+    const saved = await this.resourceRepository.save(resource);
+    return { success: true, message: 'Resource created successfully', data: saved };
   }
 
-  async findAll(): Promise<Resource[]> {
-    return this.resourceRepository.find();
+  async findAll(): Promise<any> {
+    const resources = await this.resourceRepository.find();
+    return { success: true, data: resources };
   }
 
-  async findOne(id: string): Promise<Resource | null> {
-    return this.resourceRepository.findOne({ where: { id } });
+  async findOne(id: string): Promise<any> {
+    const resource = await this.resourceRepository.findOne({ where: { id } });
+    if (resource) {
+      return { success: true, data: resource };
+    } else {
+      return { success: false, message: 'Resource not found' };
+    }
   }
 
-  async update(id: string, updateResourceDto: UpdateResourceDto): Promise<Resource | null> {
+  async findByUserId(userId: string): Promise<Resource[]> {
+    return this.resourceRepository.find({ where: { idUser: userId } });
+  }
+
+  async update(id: string, updateResourceDto: UpdateResourceDto): Promise<any> {
     await this.resourceRepository.update(id, updateResourceDto);
-    return this.findOne(id);
+    const updated = await this.findOne(id);
+    if (updated.success) {
+      return { success: true, message: 'Resource updated successfully', data: updated.data };
+    } else {
+      return { success: false, message: 'Resource not found' };
+    }
   }
 
-  async remove(id: string): Promise<boolean> {
+  async remove(id: string): Promise<any> {
     const result = await this.resourceRepository.delete(id);
-    return (result.affected ?? 0) > 0;
+    if (result.affected && result.affected > 0) {
+      return { success: true, message: 'Resource deleted successfully' };
+    } else {
+      return { success: false, message: 'Resource not found' };
+    }
   }
 }
