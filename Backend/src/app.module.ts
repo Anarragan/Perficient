@@ -6,10 +6,12 @@ import { MapsModule } from './modules/maps/maps.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ResourcesModule } from './modules/resources/resources.module';
 import { StorageModule } from './modules/storage/storage.module';
+import { DatabaseConfigModule } from './database/db.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ envFilePath: './config/.env' }),
+    DatabaseConfigModule,
     UsersModule,
     ResourcesModule,
     StorageModule,

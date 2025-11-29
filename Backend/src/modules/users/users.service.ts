@@ -3,57 +3,47 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { randomUUID } from 'crypto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [];
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const user: User = {
-      id: randomUUID(),
-      name: createUserDto.name,
-      email: createUserDto.email,
+    const user = this.userRepository.create({
+      ...createUserDto,
       password: hashedPassword,
-      phone: createUserDto.phone,
-      cc: createUserDto.cc,
-      url_photo: createUserDto.url_photo,
-    };
-    this.users.push(user);
-    return user;
+    });
+    return this.userRepository.save(user);
   }
 
-  findAll(): User[] {
-    return this.users;
+  async findAll(): Promise<User[]> {
+    return this.userRepository.find();
   }
 
-  findOne(id: string): User | undefined {
-    return this.users.find(user => user.id === id);
+  async findOne(id: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { id } });
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User | null> {
-    const user = this.findOne(id);
-    if (!user) return null;
-    if (updateUserDto.name) user.name = updateUserDto.name;
-    if (updateUserDto.email) user.email = updateUserDto.email;
     if (updateUserDto.password) {
-      user.password = await bcrypt.hash(updateUserDto.password, 10);
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
-    if (updateUserDto.phone !== undefined) user.phone = updateUserDto.phone;
-    if (updateUserDto.cc !== undefined) user.cc = updateUserDto.cc;
-    if (updateUserDto.url_photo !== undefined) user.url_photo = updateUserDto.url_photo;
-    return user;
+    await this.userRepository.update(id, updateUserDto);
+    return this.findOne(id);
   }
 
-  remove(id: string): boolean {
-    const index = this.users.findIndex(user => user.id === id);
-    if (index === -1) return false;
-    this.users.splice(index, 1);
-    return true;
+  async remove(id: string): Promise<boolean> {
+    const result = await this.userRepository.delete(id);
+    return (result.affected ?? 0) > 0;
   }
 
-  async findByEmail(email: string): Promise<User | undefined> {
-    return this.users.find(user => user.email === email);
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { email } });
   }
 }
