@@ -2,8 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Sse, UseGuards } fro
 import { VehiclesService } from './vehicles.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
-import { Observable, interval, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { switchMap, startWith } from 'rxjs/operators';
 import { ApiSecurity, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -41,7 +41,8 @@ export class VehiclesController {
 
   @Sse('user/:userId/stream')
   streamUserVehicles(@Param('userId') userId: string): Observable<MessageEvent> {
-    return interval(1000).pipe(
+    return this.vehiclesService.subject.pipe(
+      startWith(null),
       switchMap(() => {
         const vehicles = this.vehiclesService.findByUserId(userId);
         return of({ data: vehicles } as MessageEvent);
