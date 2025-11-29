@@ -14,7 +14,7 @@ export class VehiclesService {
     const vehicle: Vehicle = {
       id: randomUUID(),
       capacidad: createVehicleDto.capacidad,
-      id_type: createVehicleDto.id_type as any,
+      id_type: { id: createVehicleDto.id_type } as any,
       id_user: createVehicleDto.id_user !== undefined ? ({ id: createVehicleDto.id_user } as any) : undefined,
     };
     this.vehicles.push(vehicle);
