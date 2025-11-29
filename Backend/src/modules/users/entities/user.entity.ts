@@ -1,5 +1,9 @@
 export class User {
-  id: number;
-  username: string;
+  id: string;
+  name: string;
+  email: string;
   password: string;
+  phone?: string;
+  cc?: string;
+  url_photo?: string;
 }

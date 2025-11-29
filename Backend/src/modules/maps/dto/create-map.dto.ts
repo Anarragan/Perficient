@@ -1,1 +1,4 @@
-export class CreateMapDto {}
+export class CreateMapDto {
+  url: string;
+  description?: string;
+}

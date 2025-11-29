@@ -1,1 +1,5 @@
-export class CreateStorageDto {}
+export class CreateStorageDto {
+  type: string;
+  lowlimit: number;
+  highlimit: number;
+}

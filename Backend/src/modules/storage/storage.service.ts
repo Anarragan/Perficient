@@ -1,26 +1,45 @@
 import { Injectable } from '@nestjs/common';
 import { CreateStorageDto } from './dto/create-storage.dto';
 import { UpdateStorageDto } from './dto/update-storage.dto';
+import { Storage } from './entities/storage.entity';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class StorageService {
-  create(createStorageDto: CreateStorageDto) {
-    return 'This action adds a new storage';
+  private storages: Storage[] = [];
+
+  create(createStorageDto: CreateStorageDto): Storage {
+    const storage: Storage = {
+      id: randomUUID(),
+      type: createStorageDto.type,
+      lowlimit: createStorageDto.lowlimit,
+      highlimit: createStorageDto.highlimit,
+    };
+    this.storages.push(storage);
+    return storage;
   }
 
-  findAll() {
-    return `This action returns all storage`;
+  findAll(): Storage[] {
+    return this.storages;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} storage`;
+  findOne(id: string): Storage | undefined {
+    return this.storages.find(storage => storage.id === id);
   }
 
-  update(id: number, updateStorageDto: UpdateStorageDto) {
-    return `This action updates a #${id} storage`;
+  update(id: string, updateStorageDto: UpdateStorageDto): Storage | null {
+    const storage = this.findOne(id);
+    if (!storage) return null;
+    if (updateStorageDto.type) storage.type = updateStorageDto.type;
+    if (updateStorageDto.lowlimit !== undefined) storage.lowlimit = updateStorageDto.lowlimit;
+    if (updateStorageDto.highlimit !== undefined) storage.highlimit = updateStorageDto.highlimit;
+    return storage;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} storage`;
+  remove(id: string): boolean {
+    const index = this.storages.findIndex(storage => storage.id === id);
+    if (index === -1) return false;
+    this.storages.splice(index, 1);
+    return true;
   }
 }

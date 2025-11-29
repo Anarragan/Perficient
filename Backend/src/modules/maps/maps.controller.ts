@@ -19,16 +19,16 @@ export class MapsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.mapsService.findOne(+id);
+    return this.mapsService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateMapDto: UpdateMapDto) {
-    return this.mapsService.update(+id, updateMapDto);
+    return this.mapsService.update(id, updateMapDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.mapsService.remove(+id);
+    return this.mapsService.remove(id);
   }
 }

@@ -19,16 +19,16 @@ export class StorageController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.storageService.findOne(+id);
+    return this.storageService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateStorageDto: UpdateStorageDto) {
-    return this.storageService.update(+id, updateStorageDto);
+    return this.storageService.update(id, updateStorageDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.storageService.remove(+id);
+    return this.storageService.remove(id);
   }
 }
