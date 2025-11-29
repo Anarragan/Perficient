@@ -52,7 +52,7 @@ export class StorageResourcesService {
 
   async remove(idStorage: string, idResource: string): Promise<any> {
     const result = await this.storageResourceRepository.delete({ idStorage, idResource });
-    if (result.affected > 0) {
+    if (result && result.affected && result.affected > 0) {
       return { success: true, message: 'Storage resource deleted successfully' };
     } else {
       return { success: false, message: 'Storage resource not found' };

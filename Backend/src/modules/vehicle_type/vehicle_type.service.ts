@@ -34,7 +34,7 @@ export class VehicleTypeService {
 
   async update(id: string, updateVehicleTypeDto: UpdateVehicleTypeDto): Promise<any> {
     const result = await this.vehicleTypeRepository.update(id, updateVehicleTypeDto);
-    if (result.affected > 0) {
+    if (result && result.affected && result.affected > 0) {
       const updated = await this.vehicleTypeRepository.findOne({ where: { id } });
       return { success: true, message: 'Vehicle type updated successfully', data: updated };
     } else {
@@ -44,7 +44,7 @@ export class VehicleTypeService {
 
   async remove(id: string): Promise<any> {
     const result = await this.vehicleTypeRepository.delete(id);
-    if (result.affected > 0) {
+    if (result && result.affected && result.affected > 0) {
       return { success: true, message: 'Vehicle type deleted successfully' };
     } else {
       return { success: false, message: 'Vehicle type not found' };

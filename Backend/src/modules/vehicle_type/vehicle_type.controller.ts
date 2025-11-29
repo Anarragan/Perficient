@@ -19,16 +19,16 @@ export class VehicleTypeController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.vehicleTypeService.findOne(+id);
+    return this.vehicleTypeService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateVehicleTypeDto: UpdateVehicleTypeDto) {
-    return this.vehicleTypeService.update(+id, updateVehicleTypeDto);
+    return this.vehicleTypeService.update(id, updateVehicleTypeDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.vehicleTypeService.remove(+id);
+    return this.vehicleTypeService.remove(id);
   }
 }

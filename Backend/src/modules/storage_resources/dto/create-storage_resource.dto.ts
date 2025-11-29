@@ -1,1 +1,4 @@
-export class CreateStorageResourceDto {}
+export class CreateStorageResourceDto {
+  idStorage: string;
+  idResource: string;
+}

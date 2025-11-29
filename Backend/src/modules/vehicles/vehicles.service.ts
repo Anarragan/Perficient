@@ -8,7 +8,11 @@ import { Subject } from 'rxjs';
 @Injectable()
 export class VehiclesService {
   private vehicles: Vehicle[] = [];
-  private subject = new Subject();
+  private subject = new Subject<void>();
+
+  getSubject() {
+    return this.subject.asObservable();
+  }
 
   create(createVehicleDto: CreateVehicleDto): any {
     const vehicle: Vehicle = {
@@ -45,8 +49,8 @@ export class VehiclesService {
       return { success: false, message: 'Vehicle not found' };
     }
     if (updateVehicleDto.capacidad !== undefined) vehicle.capacidad = updateVehicleDto.capacidad;
-    if (updateVehicleDto.id_type) vehicle.id_type = updateVehicleDto.id_type;
-    if (updateVehicleDto.id_user !== undefined) vehicle.id_user = updateVehicleDto.id_user;
+    if (updateVehicleDto.id_type) vehicle.id_type = { id: updateVehicleDto.id_type } as any;
+    if (updateVehicleDto.id_user !== undefined) vehicle.id_user = updateVehicleDto.id_user ? ({ id: updateVehicleDto.id_user } as any) : undefined;
     this.subject.next();
     return { success: true, message: 'Vehicle updated successfully', data: vehicle };
   }

@@ -41,7 +41,7 @@ export class ResourcesController {
 
   @Sse('user/:userId/stream')
   streamUserResources(@Param('userId') userId: string): Observable<MessageEvent> {
-    return this.resourcesService.subject.pipe(
+    return this.resourcesService.getSubject().pipe(
       startWith(null),
       switchMap(async () => {
         const resources = await this.resourcesService.findByUserId(userId);

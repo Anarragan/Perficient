@@ -22,18 +22,18 @@ export class StorageResourcesController {
     return this.storageResourcesService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.storageResourcesService.findOne(+id);
+  @Get(':idStorage/:idResource')
+  findOne(@Param('idStorage') idStorage: string, @Param('idResource') idResource: string) {
+    return this.storageResourcesService.findOne(idStorage, idResource);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStorageResourceDto: UpdateStorageResourceDto) {
-    return this.storageResourcesService.update(+id, updateStorageResourceDto);
+  @Patch(':idStorage/:idResource')
+  update(@Param('idStorage') idStorage: string, @Param('idResource') idResource: string, @Body() updateStorageResourceDto: UpdateStorageResourceDto) {
+    return this.storageResourcesService.update(idStorage, idResource, updateStorageResourceDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.storageResourcesService.remove(+id);
+  @Delete(':idStorage/:idResource')
+  remove(@Param('idStorage') idStorage: string, @Param('idResource') idResource: string) {
+    return this.storageResourcesService.remove(idStorage, idResource);
   }
 }

@@ -13,7 +13,11 @@ export class ResourcesService {
     private resourceRepository: Repository<Resource>,
   ) {}
 
-  private subject = new Subject();
+  private subject = new Subject<void>();
+
+  getSubject() {
+    return this.subject.asObservable();
+  }
 
   async create(createResourceDto: CreateResourceDto): Promise<any> {
     const resource = this.resourceRepository.create(createResourceDto);

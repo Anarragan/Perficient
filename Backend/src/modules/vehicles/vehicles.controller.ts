@@ -41,7 +41,7 @@ export class VehiclesController {
 
   @Sse('user/:userId/stream')
   streamUserVehicles(@Param('userId') userId: string): Observable<MessageEvent> {
-    return this.vehiclesService.subject.pipe(
+    return this.vehiclesService.getSubject().pipe(
       startWith(null),
       switchMap(() => {
         const vehicles = this.vehiclesService.findByUserId(userId);
