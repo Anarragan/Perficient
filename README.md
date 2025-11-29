@@ -170,6 +170,9 @@ El esquema de la base de datos incluye las siguientes tablas principales:
 - `vehicles`: Vehículos específicos.
 - `maps`: Mapas de Marte.
 
+### Diagrama Entidad-Relación (DER)
+![Diagrama DER de la Base de Datos]({7A07AAF9-9DF6-49CD-959F-E77D42C25519}.png)
+
 Para más detalles, consulta el archivo `seed.sql` en el directorio del backend.
 
 ## Contribución
