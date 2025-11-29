@@ -1,8 +1,9 @@
 -- Seed script for PostgreSQL
 -- Run this script in your PostgreSQL database
 
--- Insert Users (password is hashed 'password123')
+-- Insert Users (password is hashed 'password123' for seeded users, '1234' for Marco)
 INSERT INTO users (id, name, email, password, phone, cc, url_photo) VALUES
+('06f7da8f-7fb1-4631-b567-cde20549cbc8', 'Marco', 'marco@example.com', '$2b$10$xb0Hd7eI0w87dkzafzzgvOhA8yX7ub.glpJGUcKNFVTLdn.xOC//e', NULL, NULL, NULL),
 ('8a2a4d8c-23d4-4c3f-a52a-5ac0d101f514', 'Ana', 'ana@mars.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NULL, NULL, NULL),
 ('a20fc84c-3505-4d48-ab7c-4ea47103fe43', 'John Doe', 'john.doe@mars.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+1234567890', '123456789', 'https://www.univision.com/_next/image?url=https%3A%2F%2Fst1.uvnimg.com%2Fb2%2F3d%2F0275cd1e4812a2f8b3d624b15783%2Fd9lvjtpvuaajtg.jpeg&w=1280&q=75'),
 ('058c7ecd-48e5-4cc3-a1ef-5817be89602a', 'Juan Pérez', 'juan@mars.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '123456789', '1234567890', 'https://example.com/photo.jpg'),

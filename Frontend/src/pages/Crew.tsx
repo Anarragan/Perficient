@@ -41,8 +41,10 @@ export default function Crew() {
     });
 
     apiGet('/users', token)
-      .then((data: any[]) => {
-        const mapped: CrewMember[] = data.map((u) => ({
+      .then((resp: any) => {
+        console.log('Users API response:', resp);
+        const data = Array.isArray(resp) ? resp : (resp.success && resp.data ? resp.data : []);
+        const mapped: CrewMember[] = data.map((u: any) => ({
           id: u.id ?? u.user_id ?? String(u.email ?? u.name ?? Math.random()),
           name: (u.name ?? `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim()) || u.email,
           role: u.role ?? 'Crew Member',

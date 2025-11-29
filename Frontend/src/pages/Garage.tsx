@@ -128,62 +128,96 @@ export default function Garage() {
       </div>
 
       <div className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {error && (
-            <Card className="p-6 border-border/50">
-              <p className="text-sm text-status-critical">{error}</p>
+        {error && (
+          <Card className="p-6 border-border/50 mb-6">
+            <p className="text-sm text-status-critical">{error}</p>
+          </Card>
+        )}
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <Card className="p-8 border-border/50">
+              <p className="text-lg text-muted-foreground">Cargando vehículos...</p>
             </Card>
-          )}
-          {loading && (
-            <Card className="p-6 border-border/50">
-              <p className="text-sm text-muted-foreground">Cargando vehículos...</p>
+          </div>
+        )}
+        {!loading && vehicles.length === 0 && (
+          <div className="flex items-center justify-center py-20">
+            <Card className="p-8 border-border/50 text-center">
+              <Wrench className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <p className="text-lg text-muted-foreground">No vehicles assigned</p>
+              <p className="text-sm text-muted-foreground mt-2">Check back later for available vehicles</p>
             </Card>
-          )}
+          </div>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {vehicles.map((vehicle) => (
-            <Card key={vehicle.id} className="p-6 border-border/50 hover:border-primary/50 transition-all duration-300">
-              <div className="space-y-4">
+            <Card key={vehicle.id} className="group relative overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
+              {/* Background gradient effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-mars-orange/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="relative p-6 space-y-4">
+                {/* Header with icon */}
                 <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-xl font-bold">
-                      {vehicle.name ?? (typeof vehicle.id_type === 'object' ? vehicle.id_type.name : 'Vehicle')}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Type: {typeof vehicle.id_type === 'object' ? vehicle.id_type.name : vehicle.id_type}
-                    </p>
-                    <p className="text-sm text-muted-foreground">Capacity: {vehicle.capacidad} units</p>
-                    <p className="text-xs text-muted-foreground font-mono mt-1">{vehicle.id}</p>
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-mars-orange/20 border border-primary/30 group-hover:scale-110 transition-transform duration-300">
+                      <Wrench className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold mb-1 group-hover:text-primary transition-colors">
+                        {vehicle.name ?? (typeof vehicle.id_type === 'object' ? vehicle.id_type.name : 'Vehicle')}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {typeof vehicle.id_type === 'object' ? vehicle.id_type.name : vehicle.id_type}
+                      </p>
+                    </div>
                   </div>
-                  {vehicle.status && (
-                    <Badge
-                      variant={vehicle.status === 'active' ? 'default' : vehicle.status === 'maintenance' ? 'destructive' : 'secondary'}
-                      className={
-                        vehicle.status === 'active' ? 'bg-status-green hover:bg-status-green' :
-                        vehicle.status === 'maintenance' ? 'bg-status-yellow hover:bg-status-yellow' :
-                        'bg-muted hover:bg-muted'
-                      }
-                    >
-                      {vehicle.status.toUpperCase()}
-                    </Badge>
-                  )}
+                  <Badge variant="outline" className="border-status-green text-status-green bg-status-green/10">
+                    ACTIVE
+                  </Badge>
                 </div>
 
+                {/* Description */}
+                {typeof vehicle.id_type === 'object' && vehicle.id_type.description && (
+                  <div className="p-3 rounded-lg bg-secondary/30 border border-border/30">
+                    <p className="text-sm text-muted-foreground italic">{vehicle.id_type.description}</p>
+                  </div>
+                )}
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <div className="p-3 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Gauge className="w-4 h-4 text-primary" />
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider">Capacity</span>
+                    </div>
+                    <p className="text-2xl font-bold font-mono text-primary">{vehicle.capacidad}</p>
+                    <p className="text-xs text-muted-foreground">units</p>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-gradient-to-br from-mission-blue/10 to-mission-blue/5 border border-mission-blue/20">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Battery className="w-4 h-4 text-mission-blue" />
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider">Status</span>
+                    </div>
+                    <p className="text-lg font-bold text-mission-blue">Ready</p>
+                    <p className="text-xs text-muted-foreground">operational</p>
+                  </div>
+                </div>
+
+                {/* Footer Info */}
                 <div className="pt-4 border-t border-border/30 space-y-2">
-                  {typeof vehicle.id_type === 'object' && vehicle.id_type.description && (
-                    <div className="text-sm text-muted-foreground">
-                      <p>{vehicle.id_type.description}</p>
-                    </div>
-                  )}
                   {vehicle.id_user && typeof vehicle.id_user === 'object' && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Assigned to</span>
-                      <span className="font-medium">{vehicle.id_user.name}</span>
+                    <div className="flex items-center justify-between text-sm p-2 rounded bg-secondary/20">
+                      <span className="flex items-center gap-2 text-muted-foreground">
+                        <MapPin className="w-4 h-4" />
+                        Pilot
+                      </span>
+                      <span className="font-medium text-foreground">{vehicle.id_user.name}</span>
                     </div>
                   )}
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Status</span>
-                    <Badge variant="outline" className="border-status-green text-status-green">
-                      OPERATIONAL
-                    </Badge>
+                  <div className="flex items-center justify-between text-xs p-2 rounded bg-secondary/20">
+                    <span className="text-muted-foreground">Vehicle ID</span>
+                    <span className="font-mono text-muted-foreground">{vehicle.id.slice(0, 8)}...</span>
                   </div>
                 </div>
               </div>
