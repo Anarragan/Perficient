@@ -33,7 +33,7 @@ export class VehiclesService {
   }
 
   findByUserId(userId: string): Vehicle[] {
-    return this.vehicles.filter(vehicle => vehicle.id_user === userId);
+    return this.vehicles.filter(vehicle => vehicle.id_user?.id === userId);
   }
 
   update(id: string, updateVehicleDto: UpdateVehicleDto): any {
