@@ -5,22 +5,22 @@ import { UpdateStorageResourceDto } from './dto/update-storage_resource.dto';
 @Injectable()
 export class StorageResourcesService {
   create(createStorageResourceDto: CreateStorageResourceDto) {
-    return 'This action adds a new storageResource';
+    return { success: true, message: 'Storage resource created successfully' };
   }
 
   findAll() {
-    return `This action returns all storageResources`;
+    return { success: true, data: [] };
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} storageResource`;
+    return { success: false, message: 'Storage resource not found' };
   }
 
   update(id: number, updateStorageResourceDto: UpdateStorageResourceDto) {
-    return `This action updates a #${id} storageResource`;
+    return { success: true, message: 'Storage resource updated successfully' };
   }
 
   remove(id: number) {
-    return `This action removes a #${id} storageResource`;
+    return { success: true, message: 'Storage resource deleted successfully' };
   }
 }

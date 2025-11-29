@@ -18,7 +18,7 @@ import { join } from 'path';
         synchronize: true,
         autoLoadEntities: true,
         entities: [join(__dirname, '..', '..', 'modules', '**', 'entities', '*.entity.{ts,js}')],
-        logging: true,
+        logging: false,
         ssl: {
           rejectUnauthorized: false,
         },

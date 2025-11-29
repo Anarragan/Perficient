@@ -7,10 +7,11 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ResourcesModule } from './modules/resources/resources.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { DatabaseConfigModule } from './database/db.config';
+import { NasaModule } from './modules/nasa/nasa.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ envFilePath: 'src/config/.env' }),
+    ConfigModule.forRoot({ envFilePath: './src/config/.env' }),
     DatabaseConfigModule,
     UsersModule,
     ResourcesModule,
@@ -18,6 +19,7 @@ import { DatabaseConfigModule } from './database/db.config';
     VehiclesModule,
     MapsModule,
     AuthModule,
+    NasaModule,
   ],
 })
 export class AppModule {}

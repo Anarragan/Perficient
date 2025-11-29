@@ -8,7 +8,7 @@ import { randomUUID } from 'crypto';
 export class VehiclesService {
   private vehicles: Vehicle[] = [];
 
-  create(createVehicleDto: CreateVehicleDto): Vehicle {
+  create(createVehicleDto: CreateVehicleDto): any {
     const vehicle: Vehicle = {
       id: randomUUID(),
       capacidad: createVehicleDto.capacidad,
@@ -16,30 +16,43 @@ export class VehiclesService {
       id_user: createVehicleDto.id_user !== undefined ? ({ id: createVehicleDto.id_user } as any) : undefined,
     };
     this.vehicles.push(vehicle);
-    return vehicle;
+    return { success: true, message: 'Vehicle created successfully', data: vehicle };
   }
 
-  findAll(): Vehicle[] {
-    return this.vehicles;
+  findAll(): any {
+    return { success: true, data: this.vehicles };
   }
 
-  findOne(id: string): Vehicle | undefined {
-    return this.vehicles.find(vehicle => vehicle.id === id);
+  findOne(id: string): any {
+    const vehicle = this.vehicles.find(vehicle => vehicle.id === id);
+    if (vehicle) {
+      return { success: true, data: vehicle };
+    } else {
+      return { success: false, message: 'Vehicle not found' };
+    }
   }
 
-  update(id: string, updateVehicleDto: UpdateVehicleDto): Vehicle | null {
-    const vehicle = this.findOne(id);
-    if (!vehicle) return null;
+  findByUserId(userId: string): Vehicle[] {
+    return this.vehicles.filter(vehicle => vehicle.id_user === userId);
+  }
+
+  update(id: string, updateVehicleDto: UpdateVehicleDto): any {
+    const vehicle = this.vehicles.find(vehicle => vehicle.id === id);
+    if (!vehicle) {
+      return { success: false, message: 'Vehicle not found' };
+    }
     if (updateVehicleDto.capacidad !== undefined) vehicle.capacidad = updateVehicleDto.capacidad;
     if (updateVehicleDto.id_type) vehicle.id_type = updateVehicleDto.id_type as any;
     if (updateVehicleDto.id_user !== undefined) vehicle.id_user = ({ id: updateVehicleDto.id_user } as any);
     return vehicle;
   }
 
-  remove(id: string): boolean {
+  remove(id: string): any {
     const index = this.vehicles.findIndex(vehicle => vehicle.id === id);
-    if (index === -1) return false;
+    if (index === -1) {
+      return { success: false, message: 'Vehicle not found' };
+    }
     this.vehicles.splice(index, 1);
-    return true;
+    return { success: true, message: 'Vehicle deleted successfully' };
   }
 }
